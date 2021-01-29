@@ -1,0 +1,43 @@
+name: 'Get Upstream Dependency'
+description: |
+  Gets upstream dependency version metadata
+
+inputs:
+  github-token:
+    description: github access token
+    required: false
+  name:
+    description: dependency name
+    required: true
+  version:
+    description: dependency version
+    required: true
+
+outputs:
+  metadata:
+    description: metadata required to build dependency version
+
+runs:
+  using: 'composite'
+  steps:
+    - id: release-notes
+      shell: bash
+      run: |
+        #!/usr/bin/env bash
+        set -euo pipefail
+
+        go build -o /entrypoint "${{ github.action_path }}/entrypoint"
+
+        metadata="$(/entrypoint \
+          --github-token "${{ inputs.github-token }}" \
+          --name "${{ inputs.name }}" \
+          --version "${{ inputs.version }}"
+        )"
+
+        metadata="${metadata//'%'/'%25'}"
+        metadata="${metadata//$'\n'/'%0A'}"
+        metadata="${metadata//$'\r'/'%0D'}"
+
+        echo "::set-output name=metadata::${metadata}"
+
+        rm -f /entrypoint
