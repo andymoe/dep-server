@@ -1,10 +1,10 @@
-name: <VAR_DEP_NAME> get new versions
+name: node get new versions
 
 on:
   workflow_dispatch: {}
 
 jobs:
-  check-<VAR_DEP_NAME>:
+  check-node:
     name: Check for new versions
     runs-on: ubuntu-latest
     steps:
@@ -22,13 +22,13 @@ jobs:
     - name: Get Known Versions
       id: known-versions
       run: |
-        echo "set-output::known-versions='$(gsutil cat "gs://dependency-ci-artifacts/known-versions/<VAR_DEP_NAME>")'"
+        echo "set-output::known-versions='$(gsutil cat "gs://dependency-ci-artifacts/known-versions/node")'"
 
     - name: Get New Versions
       id: get-new-versions
       uses: ./actions/list-new-upstream-dependency-versions
       with:
-        name: <VAR_DEP_NAME>
+        name: node
         known-versions: "${{ steps.known-versions.outputs.known-versions }}"
 
     - name: Trigger Builds
@@ -44,7 +44,7 @@ jobs:
                   \"event_type\": \"build\", \
                   \"client_payload\": { \
                     \"data\": { \
-                      \"name\": \"<VAR_DEP_NAME>\", \
+                      \"name\": \"node\", \
                       \"version\": \"${version}\" \
                      } \
                    } \
@@ -54,4 +54,4 @@ jobs:
     - name: Updates Known Versions
       run: |
         echo "${{ steps.get-new-versions.outputs.upstream-versions }}" > known_versions
-        gsutil cp known_versions "gs://dependency-ci-artifacts/known-versions/<VAR_DEP_NAME>"
+        gsutil cp known_versions "gs://dependency-ci-artifacts/known-versions/node"

@@ -24,13 +24,18 @@ outputs:
 runs:
   using: 'composite'
   steps:
+
+    - id: cat-action
+      shell: bash
+      run: cat "${{ github.action_path }}/action.yml"
+
     - id: new-versions
       shell: bash
       run: |
         #!/usr/bin/env bash
         set -euo pipefail
 
-        go build -o /entrypoint "${{ github.action_path }}/entrypoint"
+        go build -o /entrypoint "${{ github.action_path }}/entrypoint/main.go"
 
         upstream_versions="$(/entrypoint \
           --github-token "${{ inputs.github-token }}" \
