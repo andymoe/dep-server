@@ -26,10 +26,32 @@ jobs:
 
     - name: Get New Versions
       id: get-new-versions
-      uses: ./actions/list-new-upstream-dependency-versions
-      with:
-        name: go
-        known-versions: "${{ steps.known-versions.outputs.known-versions }}"
+      run: |
+        #!/usr/bin/env bash
+        set -euo pipefail
+
+        go build -o /entrypoint "./actions/list-new-upstream-dependency-versions/entrypoint/main.go"
+
+        upstream_versions="$(/entrypoint \
+          --github-token "${{ secrets.GITHUB_TOKEN }}" \
+          --name "go"
+        )"
+
+        new_versions="$(jq -n --argjson upstream_versions "$upstream_versions" \
+        --argjson known_versions "${{ steps.known-versions.outputs.known-versions }}" '$upstream_versions-$known_versions')"
+
+        upstream_versions="${upstream_versions//'%'/'%25'}"
+        upstream_versions="${upstream_versions//$'\n'/'%0A'}"
+        upstream_versions="${upstream_versions//$'\r'/'%0D'}"
+
+        new_versions="${new_versions//'%'/'%25'}"
+        new_versions="${new_versions//$'\n'/'%0A'}"
+        new_versions="${new_versions//$'\r'/'%0D'}"
+
+        echo "::set-output name=upstream-versions::${upstream_versions}"
+        echo "::set-output name=new-versions::${new_versions}"
+
+        rm -f /entrypoint
 
     - name: Trigger Builds
       run: |
