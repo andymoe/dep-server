@@ -2,6 +2,8 @@ name: <VAR_DEP_NAME> get new versions
 
 on:
   workflow_dispatch: {}
+  schedule:
+    - cron: '*/5 * * * *'
 
 jobs:
   check-<VAR_DEP_NAME>:
