@@ -1,0 +1,43 @@
+name: 'Build Dependency'
+description: |
+  Builds specified upstream dependency
+
+inputs:
+  source_metadata:
+    description: JSON object containing the source metadata
+    required: true
+
+outputs:
+  artifact:
+    value: ${{ steps.build.outputs.artifact }}
+    description: Compiled dependency artifact
+  dep-metadata:
+    value: ${{ steps.build.outputs.metadata }}
+    description: Dependency metadata
+
+runs:
+  using: 'composite'
+  steps:
+
+    - name: checkout binary-builder
+      uses: actions/checkout@v2
+      with:
+        repository: cloudfoundry/binary-builder
+
+    - name: checkout buildpacks-ci
+      uses: actions/checkout@v2
+      with:
+        repository: cloudfoundry/buildpacks-ci
+
+    - id: build
+      shell: bash
+      run: |
+        #!/usr/bin/env bash
+        set -euo pipefail
+
+        mkdir -p source
+        echo '${{ inputs.source_metadata }}' > source/data.json
+
+        STACK="bionic" SKIP_COMMIT=true \
+        ./${{ github.action_path }}/buildpacks-ci/tasks/build-binary-new/build.rb
+
