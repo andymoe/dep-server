@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	h "github.com/pivotal/dep-server/handler"
+	h "github.com/paketo-buildpacks/dep-server/internal/handler"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 	"github.com/stretchr/testify/assert"

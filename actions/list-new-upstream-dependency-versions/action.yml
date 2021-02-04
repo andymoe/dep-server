@@ -35,15 +35,17 @@ runs:
         #!/usr/bin/env bash
         set -euo pipefail
 
-        go build -o /entrypoint "${{ github.action_path }}/entrypoint/main.go"
+        cd "${{ github.action_path }}/entrypoint"
 
-        upstream_versions="$(/entrypoint \
-          --github-token "${{ inputs.github-token }}" \
+        go build -o ./entrypoint
+
+        upstream_versions="$(./entrypoint \
+          --github-token "${{ secrets.GITHUB_TOKEN }}" \
           --name "${{ inputs.name }}"
         )"
 
-        new_versions="$(jq -n --argjson upstream_versions "$upstream_versions" \
-        --argjson known_versions "${{ inputs.known_versions }}" '$upstream_versions-$known_versions')"
+        new_versions="$(jq -n --argjson upstream_versions "${upstream_versions}" \
+        --argjson known_versions ${{ inputs.known_versions }} '$upstream_versions-$known_versions')"
 
         upstream_versions="${upstream_versions//'%'/'%25'}"
         upstream_versions="${upstream_versions//$'\n'/'%0A'}"
@@ -56,4 +58,4 @@ runs:
         echo "::set-output name=upstream-versions::${upstream_versions}"
         echo "::set-output name=new-versions::${new_versions}"
 
-        rm -f /entrypoint
+        rm -f ./entrypoint

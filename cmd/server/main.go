@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/pivotal/dep-server/handler"
+	"github.com/paketo-buildpacks/dep-server/internal/handler"
 )
 
 func main() {

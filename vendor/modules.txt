@@ -1,3 +1,6 @@
+# github.com/Masterminds/semver v1.5.0
+## explicit
+github.com/Masterminds/semver
 # github.com/davecgh/go-spew v1.1.0
 github.com/davecgh/go-spew/spew
 # github.com/pmezard/go-difflib v1.0.0
@@ -10,5 +13,17 @@ github.com/sclevine/spec/report
 ## explicit
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
+# golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
+## explicit
+golang.org/x/crypto/cast5
+golang.org/x/crypto/openpgp
+golang.org/x/crypto/openpgp/armor
+golang.org/x/crypto/openpgp/elgamal
+golang.org/x/crypto/openpgp/errors
+golang.org/x/crypto/openpgp/packet
+golang.org/x/crypto/openpgp/s2k
+# gopkg.in/yaml.v2 v2.4.0
+## explicit
+gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
 gopkg.in/yaml.v3
