@@ -25,10 +25,6 @@ runs:
   using: 'composite'
   steps:
 
-    - id: cat-action
-      shell: bash
-      run: cat "${{ github.action_path }}/action.yml"
-
     - id: new-versions
       shell: bash
       run: |
