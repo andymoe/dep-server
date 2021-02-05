@@ -3,16 +3,16 @@ description: |
   Builds specified upstream dependency
 
 inputs:
-  source_metadata:
+  source-metadata:
     description: JSON object containing the source metadata
     required: true
 
 outputs:
-  artifact:
+  artifact-path:
     value: ${{ steps.build.outputs.artifact }}
-    description: Compiled dependency artifact
+    description: Path to compiled dependency artifact
   dep-metadata:
-    value: ${{ steps.build.outputs.metadata }}
+    value: ${{ steps.metadata.outputs.dep-metadata }}
     description: Dependency metadata
 
 runs:
@@ -35,9 +35,49 @@ runs:
         #!/usr/bin/env bash
         set -euo pipefail
 
+        source_metadata='${{ inputs.source-metadata }}'
+
         mkdir -p source
-        echo '${{ inputs.source_metadata }}' > source/data.json
+        echo "${source_metadata}" > source/data.json
+
+        mkdir -p artifacts
+        mkdir -p dep-metadata
 
         STACK="bionic" SKIP_COMMIT=true \
         ./${{ github.action_path }}/buildpacks-ci/tasks/build-binary-new/build.rb
 
+        metadata="$(cat dep-metadata/*.json)"
+        echo "::set-output name=metadata::${metadata}"
+
+        echo '::set-output name=artifact-path::"$(ls ${{ github.action_path }}/artifacts/*)"'
+
+    - id: metadata
+      shell: bash
+      run: |
+        #!/usr/bin/env bash
+        set -euo pipefail
+
+        source_metadata='${{ inputs.source-metadata }}'
+        metadata='${{ steps.build.outputs.metadata }}'
+
+        filename="$(jq -r .url <<< ${metadata} | sed 's:.*/::')"
+
+        dep_metadata="$(cat << EOF
+        {
+          "name": "${name}",
+          "version": "$(jq -r .version <<< ${source_metadata})",
+          "sha256": "$(jq -r .sha256 <<< ${metadata})",
+          "uri": "https://deps.paketo.io/${name}/go_test.tgz",
+          "stacks": "$(yj -yj < "${config_file}" | jq --arg name "${name}" -r '.[] | select(.name == $name) | .stacks')",
+          "source": "$(jq -r .source_uri <<< "${source_metadata}")",
+          "source_sha256": "$(jq -r .source_sha <<< "${source_metadata}")",
+          "deprecation_date": "$(jq -r '.deprecation_date // ""' <<< "${source_metadata}")"
+        }
+        EOF
+        )"
+
+        dep_metadata="${dep_metadata//'%'/'%25'}"
+        dep_metadata="${dep_metadata//$'\n'/'%0A'}"
+        dep_metadata="${dep_metadata//$'\r'/'%0D'}"
+
+        echo "::set-output name=dep-metadata::${dep_metadata}"
