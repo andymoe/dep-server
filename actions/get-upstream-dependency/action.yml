@@ -32,7 +32,7 @@ runs:
         #!/usr/bin/env bash
         set -euo pipefail
 
-        go build -o /entrypoint "${{ github.action_path }}/entrypoint"
+        go build -o /entrypoint "${{ github.action_path }}/entrypoint/main.go"
 
         metadata="$(/entrypoint \
           --github-token "${{ inputs.github-token }}" \

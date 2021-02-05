@@ -46,10 +46,9 @@ jobs:
             -H "Content-Type: application/json" \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -d "{ \
-                  \"event_type\": \"build\", \
+                  \"event_type\": \"<VAR_DEP_NAME>-build\", \
                   \"client_payload\": { \
                     \"data\": { \
-                      \"name\": \"<VAR_DEP_NAME>\", \
                       \"version\": \"${version}\" \
                      } \
                    } \

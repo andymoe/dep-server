@@ -1,0 +1,66 @@
+name: <VAR_DEP_NAME> build
+
+on:
+  workflow_dispatch:
+    inputs:
+      VERSION:
+        required: true
+  repository_dispatch:
+    types: [ build ]
+
+env:
+  VERSION: ${{ github.event.client_payload.version }}
+
+jobs:
+  build-<VAR_DEP_NAME>:
+    runs-on: ubuntu-18.04
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+
+    - name: Setup Go
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.15
+
+    - name: Set Env Vars
+      run: |
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+        fi
+
+    - name: Get upstream dependency
+      id: get
+      uses: ./actions/get-upstream-dependency
+      with:
+        name: <VAR_DEP_NAME>
+        version: "${{ env.VERSION }}"
+
+    - name: Build
+      id: build
+      uses: ./actions/build-dependency
+      with:
+        name: <VAR_DEP_NAME>
+        version: "${{ env.VERSION }}"
+        url: "${{ steps.get.outputs.uri }}"
+        sha256: "${{ steps.get.outputs.sha256 }}"
+
+    - name: Upload dependency and metadata
+      run: |
+        artifact_path="${{ steps.build.outputs.artifact-path }}"
+        url="https://deps.paketo.io/<VAR_DEP_NAME>/$(basename "${artifact_path}")"
+
+        cat >metadata.json <<-EOF
+        {
+          "name": "<VAR_DEP_NAME>",
+          "version": "${{ env.VERSION }}",
+          "sha256": "${{ steps.build.outputs.sha256 }}",
+          "uri": "${url}",
+          "stacks": [],
+          "source": "${{ steps.get.outputs.uri }}",
+          "source_sha256": "${{ steps.get.outputs.sha256 }}",
+          "deprecation_date": "${{ steps.get.outputs.deprecation-date }}"
+        }
+        EOF
+
+        cat metadata.json

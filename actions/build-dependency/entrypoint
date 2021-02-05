@@ -52,4 +52,5 @@ STACK="bionic" SKIP_COMMIT=true \
 sha256="$(cat dep-metadata/*.json | jq -r .sha256)"
 echo "::set-output name=sha256::${sha256}"
 
-echo '::set-output name=artifact-path::"$(ls $PWD/artifacts/*)"'
+artifact_path="$(ls "$PWD"/artifacts/*)"
+echo "::set-output name=artifact-path::${artifact_path}"

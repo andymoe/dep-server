@@ -23,7 +23,7 @@ jobs:
         sudo curl -sSLf -o /usr/local/bin/ytt https://github.com/vmware-tanzu/carvel-ytt/releases/latest/download/ytt-linux-amd64
         sudo chmod a+x /usr/local/bin/ytt
 
-    - name: generate
+    - name: Generate workflows
       run: |
         deps_json="$(cat .github/data/dependencies.yml | yj -yj)"
         deps="$(echo "$deps_json" | jq -r '.[].name')"
@@ -31,17 +31,22 @@ jobs:
         for dep in $deps; do
           obj="$(echo "$deps_json" | jq -r ".[] | select( .name == \"$dep\")")"
           name="$(echo "${obj}" | jq -r ".name")"
+
           cat ".github/templates/get-new-versions.yml" | sed "s/<VAR_DEP_NAME>/${name}/g" \
             > ".github/workflows/${name}-get-new-versions.yml"
+
+          cat ".github/templates/build.yml" | sed "s/<VAR_DEP_NAME>/${name}/g" \
+            > ".github/workflows/${name}-build.yml"
         done
 
-    - name: commit workflows
+    - name: Commit workflows
       run: |
         git add -AN .github/workflows
         if ! git diff --quiet .github/workflows; then
           git config user.name "Core Deps"
           git config user.email coredependencies@vmware.com
           git add .github/workflows/*-get-new-versions.yml
+          git add .github/workflows/*-build.yml
           git commit -m 'Update dependency workflows'
         fi
 
