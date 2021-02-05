@@ -14,8 +14,14 @@ inputs:
     required: true
 
 outputs:
-  metadata:
-    description: metadata required to build dependency version
+  uri:
+    description: URI of upstream dependency
+  sha256:
+    description: SHA256 of upstream dependency
+  release-date:
+    description: Release date of upstream dependency
+  deprecation-date:
+    description: Deprecation date of upstream dependency
 
 runs:
   using: 'composite'
@@ -34,10 +40,9 @@ runs:
           --version "${{ inputs.version }}"
         )"
 
-        metadata="${metadata//'%'/'%25'}"
-        metadata="${metadata//$'\n'/'%0A'}"
-        metadata="${metadata//$'\r'/'%0D'}"
-
-        echo "::set-output name=metadata::${metadata}"
+        echo "::set-output name=uri::$(jq -r .uri <<< "${metadata}")"
+        echo "::set-output name=sha256::$(jq -r .sha <<< "${metadata}")"
+        echo "::set-output name=release-date::$(jq -r .release_date <<< "${metadata}")"
+        echo "::set-output name=deprecation-date::$(jq -r .deprecation_date <<< "${metadata}")"
 
         rm -f /entrypoint
