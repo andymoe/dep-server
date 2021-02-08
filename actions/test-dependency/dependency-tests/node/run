@@ -11,7 +11,7 @@ extract_tarball() {
 }
 
 check_version() {
-  expected_version="v$1"
+  expected_version="$1"
   actual_version="$(./node/bin/node --version)"
   if [[ "${actual_version}" != "${expected_version}" ]]; then
     echo "Version ${actual_version} does not match expected version ${expected_version}"

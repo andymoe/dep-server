@@ -3,10 +3,9 @@ set -euo pipefail
 
 name=
 version=
-dependency=
+dependency_url=
 mixins=
-required_dependency_1=
-required_dependency_2=
+required_dependency=
 
 while test $# -gt 0; do
   case $1 in
@@ -18,20 +17,16 @@ while test $# -gt 0; do
       version=$2
       shift
       ;;
-    --dependency)
-      dependency=$2
+    --dependency-url)
+      dependency_url=$2
       shift
       ;;
     --mixins)
       mixins=$2
       shift
       ;;
-    --required-dependency-1)
-      required_dependency_1=$2
-      shift
-      ;;
-    --required-dependency-2)
-      required_dependency_2=$2
+    --required-dependency)
+      required_dependency=$2
       shift
       ;;
     *)
@@ -42,10 +37,12 @@ while test $# -gt 0; do
   shift
 done
 
-if [[ "${name}" == "" || "${version}" == "" || "${dependency}" == "" ]]; then
+if [[ "${name}" == "" || "${version}" == "" || "${dependency_url}" == "" ]]; then
   echo "Name, version, and dependency must be set"
   exit 1
 fi
+
+package_names=""
 
 for mixin in $(echo ${mixins} | jq -r .[]); do
   if [[ $mixin = set:* ]]; then
@@ -66,5 +63,16 @@ if [[ "${package_names}" != "" ]]; then
   apt-get -qqy install ${package_names}
 fi
 
-"dependency-tests/${dependency_name}/run" "${version}"
+mkdir -p dependency
+pushd dependency > /dev/null
+  curl -s -O "${dependency_url}"
+popd > /dev/null
 
+if [[ "${required_dependency}" != "" ]]; then
+  mkdir -p required_dependency
+  pushd required_dependency > /dev/null
+    curl -s -O "${required_dependency}"
+  popd > /dev/null
+fi
+
+"/dependency-tests/${name}/run" "${version}"

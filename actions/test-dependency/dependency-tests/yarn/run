@@ -14,7 +14,7 @@ extract_tarball_yarn() {
 extract_tarball_node() {
   rm -rf node
   mkdir node
-  tar -xf required_dependency*/*.tgz -C node
+  tar -xf required_dependency/*.tgz -C node
 }
 
 check_version() {

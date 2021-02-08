@@ -11,7 +11,7 @@ extract_tarball() {
 }
 
 check_version() {
-  expected_version="go$1"
+  expected_version="$1"
   actual_version="$(./go/bin/go version | cut -d' ' -f3)"
   if [[ "${actual_version}" != "${expected_version}" ]]; then
     echo "Version ${actual_version} does not match expected version ${expected_version}"

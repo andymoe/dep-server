@@ -1,0 +1,27 @@
+name: go build
+"on":
+  workflow_dispatch:
+    inputs:
+      VERSION:
+        required: true
+  repository_dispatch:
+    types:
+    - build
+env:
+  DEP_NAME: go
+  VERSION: go1.15.8
+jobs:
+  test-go:
+    runs-on: ubuntu-18.04
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+
+    - name: Test
+      uses: ./actions/test-dependency
+      with:
+        name: ${{ env.DEP_NAME }}
+        version: ${{ env.VERSION }}
+        dependency_url: "https://deps.paketo.io/go/go_1.15.8_linux_x64_bionic_564fac0d.tgz"
+        mixins: ""
+        required_dependency: ""

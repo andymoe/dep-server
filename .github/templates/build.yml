@@ -37,30 +37,48 @@ jobs:
       id: get
       uses: ./actions/get-upstream-dependency
       with:
-        name: "${DEP_NAME}"
+        name: "${{ env.DEP_NAME }}"
         version: "${{ env.VERSION }}"
 
     - name: Build
       id: build
       uses: ./actions/build-dependency
       with:
-        name: "${DEP_NAME}"
+        name: "${{ env.DEP_NAME }}"
         version: "${{ env.VERSION }}"
         url: "${{ steps.get.outputs.uri }}"
         sha256: "${{ steps.get.outputs.sha256 }}"
 
-    - name: Upload dependency and metadata
+    - name: Upload dependency
+      id: upload
       run: |
         artifact_path="${{ steps.build.outputs.artifact-path }}"
-        url="https://deps.paketo.io/${DEP_NAME}/$(basename "${artifact_path}")"
+        filename="$(basename "${artifact_path}")"
 
+        aws s3 cp "${artifact_path}" "s3://${{ secrets.DEPS_BUCKET }}/deps/${{ env.DEP_NAME }}/${filename}"
+
+        url="https://deps.paketo.io/${{ env.DEP_NAME }}/${filename}"
+        echo "::set-output name=dependency-url::${url}"
+
+    - name: Test
+      uses: ./actions/test-dependency
+      with:
+        name: "${{ env.DEP_NAME }}"
+        version: "${{ env.VERSION }}"
+        dependency_url: "${{ steps.upload.outputs.dependency-url }}"
+        mixins: #@ data.values.mixins
+        required_dependency: #@ data.values.required_dependency
+
+    - name: Upload dependency metadata
+      run: |
+        stacks=
         cat >metadata.json <<-EOF
         {
-          "name": "${DEP_NAME}",
+          "name": "${{ env.DEP_NAME }}",
           "version": "${{ env.VERSION }}",
           "sha256": "${{ steps.build.outputs.sha256 }}",
-          "uri": "${url}",
-          "stacks": [],
+          "uri": "${{ steps.upload.outputs.dependency-url }}",
+          "stacks": (@= data.values.stacks @),
           "source": "${{ steps.get.outputs.uri }}",
           "source_sha256": "${{ steps.get.outputs.sha256 }}",
           "deprecation_date": "${{ steps.get.outputs.deprecation-date }}"

@@ -6,7 +6,7 @@ extract_tarballs() {
   rm -rf dotnet-root
   mkdir dotnet-root
   tar -xf dependency/*.tar.xz -C dotnet-root
-  tar -xf required_dependency_1/*.tar.xz -C dotnet-root
+  tar -xf required_dependency/*.tar.xz -C dotnet-root
 }
 
 check_version() {

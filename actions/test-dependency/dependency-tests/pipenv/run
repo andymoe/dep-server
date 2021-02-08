@@ -14,7 +14,7 @@ extract_tarball_pipenv() {
 extract_tarball_python() {
   rm -rf python
   mkdir python
-  tar -xf required_dependency_1/*.tgz -C python
+  tar -xf required_dependency/*.tgz -C python
 }
 
 set_ld_library_path() {

@@ -11,7 +11,7 @@ extract_tarball() {
 extract_tarball_ruby() {
   rm -rf ruby
   mkdir ruby
-  tar -xf required_dependency*/*.tgz -C ruby
+  tar -xf required_dependency/*.tgz -C ruby
 }
 
 set_ruby_location() {

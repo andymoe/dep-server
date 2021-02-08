@@ -9,18 +9,15 @@ inputs:
   version:
     description: Version of dependency
     required: true
-  dependency:
-    description: path to dependency
+  dependency_url:
+    description: URL of dependency
     required: true
   mixins:
     description: json array containing additional package names needed to test dependency
     default: '[]'
     required: false
-  required_dependency_1:
-    description: path to additional dependency required for testing
-    required: false
-  required_dependency_2:
-    description: path to additional dependency required for testing
+  required_dependency:
+    description: URL of additional dependency required for testing
     required: false
 
 runs:
@@ -31,11 +28,9 @@ runs:
     - ${{ inputs.name }}
     - "--version"
     - ${{ inputs.version }}
-    - "--dependency"
-    - ${{ inputs.dependency }}
+    - "--dependency-url"
+    - ${{ inputs.dependency_url }}
     - "--mixins"
     - ${{ inputs.mixins }}
-    - "--required-dependency-1"
+    - "--required-dependency"
     - ${{ inputs.required_dependency_1 }}
-    - "--required-dependency-2"
-    - ${{ inputs.required_dependency_2 }}

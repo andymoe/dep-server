@@ -31,6 +31,9 @@ jobs:
         for dep in $deps; do
           obj="$(echo "$deps_json" | jq -r ".[] | select( .name == \"$dep\")")"
           name="$(echo "${obj}" | jq -r ".name")"
+          stacks="$(echo "${obj}" | jq -r '.stacks')"
+          mixins="$(echo "${obj}" | jq -r '.stacks[] | select( .id == "io.buildpacks.stacks.bionic").mixins // empty' -c)"
+          requires="$(echo "${obj}" | jq -r '.requires // empty')"
 
           ytt \
             -f ".github/templates/get-new-versions.yml" \
@@ -42,6 +45,9 @@ jobs:
             -f ".github/templates/build.yml" \
             -f ".github/data/dependency-workflows-config.yml" \
             -v name="${name}" \
+            -v stacks="${stacks}"
+            -v mixins="${mixins}" \
+            -v required_dependency="${requires}" \
             > ".github/workflows/${name}-build.yml"
         done
 
