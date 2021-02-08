@@ -1,6 +1,8 @@
-name: <VAR_DEP_NAME> build
+#@ load("@ytt:data", "data")
+name: #@ data.values.name + " build"
 
-on:
+#! "on" must be in quotes because it is a truthy in ytt
+"on":
   workflow_dispatch:
     inputs:
       VERSION:
@@ -9,10 +11,12 @@ on:
     types: [ build ]
 
 env:
+  DEP_NAME: #@ data.values.name
   VERSION: ${{ github.event.client_payload.version }}
 
 jobs:
-  build-<VAR_DEP_NAME>:
+  #@yaml/text-templated-strings
+  build-(@= data.values.name @):
     runs-on: ubuntu-18.04
     steps:
     - name: Check out code
@@ -33,14 +37,14 @@ jobs:
       id: get
       uses: ./actions/get-upstream-dependency
       with:
-        name: <VAR_DEP_NAME>
+        name: "${DEP_NAME}"
         version: "${{ env.VERSION }}"
 
     - name: Build
       id: build
       uses: ./actions/build-dependency
       with:
-        name: <VAR_DEP_NAME>
+        name: "${DEP_NAME}"
         version: "${{ env.VERSION }}"
         url: "${{ steps.get.outputs.uri }}"
         sha256: "${{ steps.get.outputs.sha256 }}"
@@ -48,11 +52,11 @@ jobs:
     - name: Upload dependency and metadata
       run: |
         artifact_path="${{ steps.build.outputs.artifact-path }}"
-        url="https://deps.paketo.io/<VAR_DEP_NAME>/$(basename "${artifact_path}")"
+        url="https://deps.paketo.io/${DEP_NAME}/$(basename "${artifact_path}")"
 
         cat >metadata.json <<-EOF
         {
-          "name": "<VAR_DEP_NAME>",
+          "name": "${DEP_NAME}",
           "version": "${{ env.VERSION }}",
           "sha256": "${{ steps.build.outputs.sha256 }}",
           "uri": "${url}",

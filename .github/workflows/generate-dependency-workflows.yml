@@ -32,10 +32,16 @@ jobs:
           obj="$(echo "$deps_json" | jq -r ".[] | select( .name == \"$dep\")")"
           name="$(echo "${obj}" | jq -r ".name")"
 
-          cat ".github/templates/get-new-versions.yml" | sed "s/<VAR_DEP_NAME>/${name}/g" \
+          ytt \
+            -f ".github/templates/get-new-versions.yml" \
+            -f ".github/data/dependency-workflows-config.yml" \
+            -v name="${name}" \
             > ".github/workflows/${name}-get-new-versions.yml"
 
-          cat ".github/templates/build.yml" | sed "s/<VAR_DEP_NAME>/${name}/g" \
+          ytt \
+            -f ".github/templates/build.yml" \
+            -f ".github/data/dependency-workflows-config.yml" \
+            -v name="${name}" \
             > ".github/workflows/${name}-build.yml"
         done
 
