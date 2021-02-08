@@ -45,7 +45,7 @@ jobs:
             -f ".github/templates/build.yml" \
             -f ".github/data/dependency-workflows-config.yml" \
             -v name="${name}" \
-            -v stacks="${stacks}"
+            -v stacks="${stacks}" \
             -v mixins="${mixins}" \
             -v required_dependency="${requires}" \
             > ".github/workflows/${name}-build.yml"

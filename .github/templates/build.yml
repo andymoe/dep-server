@@ -49,6 +49,13 @@ jobs:
         url: "${{ steps.get.outputs.uri }}"
         sha256: "${{ steps.get.outputs.sha256 }}"
 
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
     - name: Upload dependency
       id: upload
       run: |
@@ -70,9 +77,12 @@ jobs:
         required_dependency: #@ data.values.required_dependency
 
     - name: Upload dependency metadata
+      #@yaml/text-templated-strings
       run: |
-        stacks=
-        cat >metadata.json <<-EOF
+
+        aws s3 cp "s3://${{ secrets.DEPS_BUCKET }}/metadata/${{ env.DEP_NAME }}.json" metadata.json
+
+        metadata="$(cat << EOF
         {
           "name": "${{ env.DEP_NAME }}",
           "version": "${{ env.VERSION }}",
@@ -84,5 +94,14 @@ jobs:
           "deprecation_date": "${{ steps.get.outputs.deprecation-date }}"
         }
         EOF
+        )"
 
-        cat metadata.json
+        updated_metadata="$(jq --argjson metadata "${metadata}" --arg version "${{ env.version }}" -r 'del(.[] | select(.version == $version)) | [$metadata] + .' metadata.json)"
+
+        echo "${updated_metadata}" > metadata.json
+
+        aws s3 cp metadata.json "s3://${{ secrets.DEPS_BUCKET }}/metadata/${{ env.DEP_NAME }}.json"
+
+
+
+
