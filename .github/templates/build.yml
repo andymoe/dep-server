@@ -64,22 +64,31 @@ jobs:
 
         aws s3 cp "${artifact_path}" "s3://${{ secrets.DEPS_BUCKET }}/deps/${{ env.DEP_NAME }}/${filename}"
 
-        url="https://deps.paketo.io/${{ env.DEP_NAME }}/${filename}"
-        echo "::set-output name=dependency-url::${url}"
+        uri="https://deps.paketo.io/${{ env.DEP_NAME }}/${filename}"
+        echo "::set-output name=dependency-uri::${uri}"
+
+    #@ if data.values.required_dependency != '':
+    - name: Get required dependency
+      id: required-dependency
+      run: |
+        uri="$(curl -sL "https://api.deps.paketo.io/v1/dependency?name=${{ env.DEP_NAME}}" | jq '. |= sort_by(.version) | reverse[0].uri')"
+        echo "::set-output name=uri::${uri}"
+    #@ end
 
     - name: Test
       uses: ./actions/test-dependency
       with:
         name: "${{ env.DEP_NAME }}"
         version: "${{ env.VERSION }}"
-        dependency_url: "${{ steps.upload.outputs.dependency-url }}"
+        dependency_url: "${{ steps.upload.outputs.dependency-uri }}"
         mixins: #@ data.values.mixins
-        required_dependency: #@ data.values.required_dependency
+        #@ if data.values.required_dependency != '':
+        required_dependency: '${{ steps.required-dependency.outputs.uri }}'
+        #@ end
 
     - name: Upload dependency metadata
       #@yaml/text-templated-strings
       run: |
-
         aws s3 cp "s3://${{ secrets.DEPS_BUCKET }}/metadata/${{ env.DEP_NAME }}.json" metadata.json
 
         metadata="$(cat << EOF
@@ -87,7 +96,7 @@ jobs:
           "name": "${{ env.DEP_NAME }}",
           "version": "${{ env.VERSION }}",
           "sha256": "${{ steps.build.outputs.sha256 }}",
-          "uri": "${{ steps.upload.outputs.dependency-url }}",
+          "uri": "${{ steps.upload.outputs.dependency-uri }}",
           "stacks": (@= data.values.stacks @),
           "source": "${{ steps.get.outputs.uri }}",
           "source_sha256": "${{ steps.get.outputs.sha256 }}",
