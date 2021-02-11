@@ -36,12 +36,12 @@ runs:
         go build -o ./entrypoint
 
         upstream_versions="$(./entrypoint \
-          --github-token "${{ secrets.GITHUB_TOKEN }}" \
+          --github-token "${{ inputs.github-token }}" \
           --name "${{ inputs.name }}"
         )"
 
         new_versions="$(jq -n --argjson upstream_versions "${upstream_versions}" \
-        --argjson known_versions ${{ inputs.known_versions }} '$upstream_versions-$known_versions')"
+          --argjson known_versions '${{ inputs.known-versions }}' '$upstream_versions-$known_versions')"
 
         upstream_versions="${upstream_versions//'%'/'%25'}"
         upstream_versions="${upstream_versions//$'\n'/'%0A'}"

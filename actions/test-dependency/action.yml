@@ -33,4 +33,4 @@ runs:
     - "--mixins"
     - ${{ inputs.mixins }}
     - "--required-dependency"
-    - ${{ inputs.required_dependency_1 }}
+    - ${{ inputs.required_dependency }}
