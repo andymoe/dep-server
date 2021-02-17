@@ -30,25 +30,25 @@ func testAcceptance(t *testing.T, when spec.G, it spec.S) {
 		assert       = assert.New(t)
 		require      = require.New(t)
 		dependencies = []string{
-			"bundler",
-			"CAAPM",
-			"composer",
-			"curl",
-			"dotnet-aspnetcore",
-			"dotnet-runtime",
-			"dotnet-sdk",
-			"go",
-			"httpd",
+			//"bundler",
+			//"CAAPM",
+			//"composer",
+			//"curl",
+			//"dotnet-aspnetcore",
+			//"dotnet-runtime",
+			//"dotnet-sdk",
+			//"go",
+			//"httpd",
 			"icu",
-			"nginx",
-			"node",
-			"php",
-			"pip",
-			"pipenv",
-			"python",
-			"ruby",
-			"tini",
-			"yarn",
+			//"nginx",
+			//"node",
+			//"php",
+			//"pip",
+			//"pipenv",
+			//"python",
+			//"ruby",
+			//"tini",
+			//"yarn",
 		}
 	)
 
@@ -66,13 +66,6 @@ func testAcceptance(t *testing.T, when spec.G, it spec.S) {
 					var depVersions []dependency.DepVersion
 					for _, i := range versionIndicesToGet(versions) {
 						version := versions[i]
-
-						if depName == "icu" {
-							//old versions without ASC files and/or working PGP keys
-							if version == "59.1" || version == "58.2" || version == "57.1" || version == "56.1" {
-								continue
-							}
-						}
 
 						depVersion, err := dep.GetDependencyVersion(version)
 						if err != nil {
